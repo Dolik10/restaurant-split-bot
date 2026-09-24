@@ -7,6 +7,9 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
+from database import init_database, create_user
+
+
 TOKEN = os.getenv("BOT_TOKEN")
 
 dp = Dispatcher ()
@@ -50,6 +53,11 @@ main_menu = ReplyKeyboardMarkup(
 
 @dp.message(CommandStart())
 async def start_handler(message: Message):
+    user = await create_user(
+        telegram_id=message.from_user.id,
+        name=message.from_user.full_name,
+    )
+
     await message.answer(
         "Привет! 👋\n\n"
         "Я помогу вам считать счета после походов "
@@ -62,6 +70,7 @@ async def start_handler(message: Message):
         "📷 хранить чеки\n"
         "💸 считать, кто кому сколько должен\n"
         "📚 смотреть историю прошлых походов\n\n"
+        f"Рад видеть тебя, {user[2]}! 👋\n\n"
         "Выбирай действие ниже 👇",
         reply_markup=main_menu,
     )
@@ -140,6 +149,8 @@ async def profile_handler(message: Message):
 # ============================================================
 
 async def main():
+    await init_database()
+
     bot = Bot(token=TOKEN)
 
     try:
